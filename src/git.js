@@ -15,13 +15,13 @@ export const ConfigKey = {
   syncRemote: 'syncRemote',
 }
 
-var config = {}
+let config = {}
 
 export function setConfig (c) {
-  config = c
+  Object.assign(config, c)
 }
 
-export async function exec (command, silent = true, doNotAsk = false, config) {
+export async function exec (command, silent = true, doNotAsk = false) {
   if (!doNotAsk && config[ ConfigKey.askBeforeRunCommand ]) {
     let ret = await sh.askYesNo(command)
     assert(ret, 'Cancelled by user.')

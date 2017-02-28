@@ -56,7 +56,7 @@ module.exports = function (command) {
   pr     : create a pull request from current local branch.
   sync   : pull (fast-forward) from main remote.
   master : fast-forward develop and master branches, and merge develop into master.
-  prune  : prune from all remotes.
+  pa     : prune from all remotes.
   pp     : sync and remove rebased local branches. (compared by commit message)
   reset  : reset configuration for current git-root.
   y      : (yes) don't ask before command. (will be saved to configuration)
