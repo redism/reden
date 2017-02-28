@@ -1,11 +1,11 @@
 {
   "name": "reden",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple command-line utilities tool-belt",
   "main": "index.js",
   "bin": {
-    "git-pp": "./lib/git.js --pp",
-    "git-pr": "./lib/git.js --pr"
+    "git-pp": "./bin/git-pp.js",
+    "git-pr": "./bin/git-pr.js"
   },
   "scripts": {
     "build": "babel src -d lib"

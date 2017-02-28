@@ -5,22 +5,24 @@
 import Promise from 'bluebird'
 require('babel-runtime/core-js/promise').default = Promise
 require('colors')
-import yargs from 'yargs'
 import assert from 'assert'
 import s from 'shelljs'
 import sh from 'shell-helper'
-import Config from './config'
 
-let askBeforeRunCommand = true
-
-const ConfigKey = {
+export const ConfigKey = {
   askBeforeRunCommand: 'askBeforeRunCommand',
   syncBranch: 'syncBranch',
   syncRemote: 'syncRemote',
 }
 
-async function exec (command, silent = true, doNotAsk = false) {
-  if (!doNotAsk && askBeforeRunCommand) {
+var config = {}
+
+export function setConfig (c) {
+  config = c
+}
+
+export async function exec (command, silent = true, doNotAsk = false, config) {
+  if (!doNotAsk && config[ ConfigKey.askBeforeRunCommand ]) {
     let ret = await sh.askYesNo(command)
     assert(ret, 'Cancelled by user.')
   }
@@ -34,7 +36,7 @@ async function exec (command, silent = true, doNotAsk = false) {
   return r.stdout
 }
 
-function query (command, silent = true) {
+export function query (command, silent = true) {
   const r = s.exec(command, { silent })
   if (r.code !== 0) {
     console.error(r.stderr)
@@ -102,7 +104,7 @@ function hasSomethingToStash () {
   return query('git diff').trim() !== ''
 }
 
-async function createAndOpenPullRequest (config) {
+export async function createAndOpenPullRequest (config) {
   let branchName = query('git branch | grep "^*" | cut -d" " -f 2').trim()
   let accountName = getOriginAccountName()
   const [ masterAccount, masterRepo ] = await getMasterRepoInfo(config)
@@ -111,7 +113,7 @@ async function createAndOpenPullRequest (config) {
   await exec(`open https://github.com/${masterAccount}/${masterRepo}/compare/${syncBranch}...${accountName}:${branchName}?expand=0`)
 }
 
-async function synchronizeSpecificBranch (config) {
+export async function synchronizeSpecificBranch (config) {
   return stashDecorator(async () => {
     const remoteName = await getRemoteNameToSync(config)
     const localBranch = await getLocalBranchToSync(config)
@@ -146,7 +148,7 @@ async function stashDecorator (fn) {
   }
 }
 
-async function mergeDevelopToMasterAndPush (config) {
+export async function mergeDevelopToMasterAndPush (config) {
   return stashDecorator(async () => {
     const remoteName = await getRemoteNameToSync(config)
     console.log(`Fast-forwarding ${'develop'.yellow} branch.`)
@@ -164,7 +166,7 @@ async function mergeDevelopToMasterAndPush (config) {
   })
 }
 
-async function pruneFromAllRemotes () {
+export async function pruneFromAllRemotes () {
   return iterateRemote(async (remoteName) => {
     console.log(`Pruning from ${remoteName}`)
     await exec(`git remote prune ${remoteName}`)
@@ -182,7 +184,7 @@ function getLogOnelinerBetween (s1, s2) {
     .map(s => s.split(' ').slice(1).join(' '))
 }
 
-async function removeRebasedBranches (config) {
+export async function removeRebasedBranches (config) {
   await synchronizeSpecificBranch(config)
   return stashDecorator(async () => {
     return iterateLocalBranches(async (branch) => {
@@ -200,62 +202,6 @@ async function removeRebasedBranches (config) {
         await exec(`git branch -D ${branch}`)
       }
     })
-  })
-}
-
-if (require.main === module) {
-  const argv = yargs.argv
-  let fn = () => Promise.resolve()
-
-  const db = new Config()
-  db.initConfig()
-  const gitRoot = query('git rev-parse --show-toplevel').trim()
-  const config = db.getByKey(gitRoot)
-
-  if (argv.reset) {
-    Object.keys(config).forEach(k => delete config[ k ])
-    db.write()
-    console.log(`Cleared configuration for git root [${gitRoot.yellow}]`)
-  }
-
-  if (argv.y) {
-    config[ ConfigKey.askBeforeRunCommand ] = false
-  } else if (config[ ConfigKey.askBeforeRunCommand ] === undefined) {
-    config[ ConfigKey.askBeforeRunCommand ] = true
-  }
-
-  askBeforeRunCommand = !!config[ ConfigKey.askBeforeRunCommand ]
-
-  console.log(`Current configuration\n=================`)
-  Object.keys(ConfigKey).forEach(k => {
-    console.log(`  ${k.yellow} : ${config[ ConfigKey[ k ] ]}`)
-  })
-  console.log(`=================`)
-
-  if (argv.pr) {
-    fn = createAndOpenPullRequest
-  } else if (argv.sync) {
-    fn = synchronizeSpecificBranch
-  } else if (argv.master) {
-    fn = mergeDevelopToMasterAndPush
-  } else if (argv.prune) {
-    fn = pruneFromAllRemotes
-  } else if (argv.pp) {
-    fn = removeRebasedBranches
-  } else {
-    console.log(`Usage.\n
-  pr     : create a pull request from current local branch.
-  sync   : pull (fast-forward) from main remote.
-  master : fast-forward develop and master branches, and merge develop into master.
-  prune  : prune from all remotes.
-  pp     : sync and remove rebased local branches. (compared by commit message)
-  reset  : reset configuration for current git-root.
-  y      : (yes) don't ask before command. (will be saved to configuration)
-`)
-  }
-
-  fn(config).finally(() => {
-    db.write()
   })
 }
 
