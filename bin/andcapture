@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+#
+# Screen capture from currently connected android device and resize it.
+# File is saved on ~/Desktop
+#
+
+adb shell screencap -p | perl -pe 's/\x0D\x0A/\x0A/g' > ~/Desktop/screen.png
+sips -s format jpeg -Z 640 ~/Desktop/screen.png --out ~/Desktop/screen.jpg
+rm ~/Desktop/screen.png
+open -R ~/Desktop/screen.jpg

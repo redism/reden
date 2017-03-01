@@ -8,7 +8,8 @@
     "git-pr": "./bin/git-pr.js",
     "git-master": "./bin/git-master.js",
     "git-pa": "./bin/git-pa.js",
-    "git-sync": "./bin/git-sync.js"
+    "git-sync": "./bin/git-sync.js",
+    "andcapture": "./bin/andcapture"
   },
   "scripts": {
     "build": "babel src -d lib"
