@@ -2,28 +2,17 @@ import yargs from 'yargs'
 import Promise from 'bluebird'
 require('babel-runtime/core-js/promise').default = Promise
 import Config from './config'
-import {
-  query,
-  ConfigKey,
-  createAndOpenPullRequest,
-  synchronizeSpecificBranch,
-  mergeDevelopToMasterAndPush,
-  pruneFromAllRemotes,
-  removeRebasedBranches,
-  setConfig,
-} from './git'
+import { query } from './common'
+import GitSash, { ConfigKey } from './git'
 
 const argv = yargs.argv
-let fn = () => Promise.resolve()
 
-const db = new Config()
-db.initConfig()
 const gitRoot = query('git rev-parse --show-toplevel').trim()
-const config = db.getByKey(gitRoot)
+const config = Config.getByKey(gitRoot)
 
 if (argv.reset) {
   Object.keys(config).forEach(k => delete config[ k ])
-  db.write()
+  Config.write()
   console.log(`Cleared configuration for git root [${gitRoot.yellow}]`)
 }
 
@@ -39,14 +28,12 @@ Object.keys(ConfigKey).forEach(k => {
 })
 console.log(`=================`)
 
-setConfig(config)
-
 let commandMap = {
-  'pr': createAndOpenPullRequest,
-  'sync': synchronizeSpecificBranch,
-  'master': mergeDevelopToMasterAndPush,
-  'prune': pruneFromAllRemotes,
-  'pp': removeRebasedBranches,
+  'pr': 'createAndOpenPullRequest',
+  'sync': 'synchronizeSpecificBranch',
+  'master': 'mergeDevelopToMasterAndPush',
+  'prune': 'pruneFromAllRemotes',
+  'pp': 'removeRebasedBranches',
 }
 
 module.exports = function (command) {
@@ -62,8 +49,10 @@ module.exports = function (command) {
   y      : (yes) don't ask before command. (will be saved to configuration)
 `)
   } else {
-    fn(config).finally(() => {
-      db.write()
+    const sash = GitSash(config)
+
+    sash[ fn ]().finally(() => {
+      Config.write()
     })
   }
 }
