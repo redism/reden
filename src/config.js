@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 
-export default class Config {
+export class Config {
   constructor () {
     this._config = null
     this._configPath = path.join(os.homedir(), '.eden.json')
@@ -32,9 +32,7 @@ export default class Config {
   }
 }
 
-if (require.main === module) {
-  const c = new Config()
-  c.initConfig()
-  c.write()
-}
+const c = new Config()
+c.initConfig()
 
+export default c
