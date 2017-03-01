@@ -6,7 +6,7 @@ import os from 'os'
 export class Config {
   constructor () {
     this._config = null
-    this._configPath = path.join(os.homedir(), '.eden.json')
+    this._configPath = path.join(os.homedir(), '.reden.json')
   }
 
   initConfig () {

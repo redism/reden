@@ -4,6 +4,11 @@ Simple command-line utilities tool-belt. (For mac) Assumes `git`, `adb`, `gcc` i
 
 ## git utilities for github-based workflow.
 
+**Every git command gets confirm from you before executing harmful command until you told it not to (with -y option.)**
+
+This script will ask you for more information about which remote to use, which branch to use, etc. All configurations are per repo basis.
+Configurations are stored at `~/.reden.json`. You can reset options per repo /w `-reset` option.
+
 * `git pa` : Prune from all remotes.
 * `git sync` : Sync(pull) with a specific remote. Especially useful when working with pull requests with one master repo.
 * `git pr` : Push current local branch to origin, and open pull request page.
