@@ -12,7 +12,8 @@
     "andcapture": "./bin/andcapture"
   },
   "scripts": {
-    "build": "babel src -d lib"
+    "build": "babel src -d lib",
+    "postinstall": "./build.sh"
   },
   "author": {
     "name": "Jeff Oh",
