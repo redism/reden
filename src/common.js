@@ -4,10 +4,10 @@ import s from 'shelljs'
 require('colors')
 
 export async function exec (command, options) {
-  options = Object.assign(options || {}, {
+  options = Object.assign({
     silent: true,
     doNotAsk: false,
-  })
+  }, options || {})
 
   if (!options.doNotAsk) {
     let ret = await sh.askYesNo(command)
@@ -24,9 +24,9 @@ export async function exec (command, options) {
 }
 
 export function query (command, options) {
-  options = Object.assign(options || {}, {
+  options = Object.assign({
     silent: true,
-  })
+  }, options || {})
 
   const r = s.exec(command, { silent: options.silent })
   if (r.code !== 0) {
