@@ -74,7 +74,7 @@ export default function GitSash (config) {
   }
 
   function hasSomethingToStash () {
-    return query('git diff').trim() !== ''
+    return query('git diff --cached').trim() !== ''
   }
 
   async function createAndOpenPullRequest () {

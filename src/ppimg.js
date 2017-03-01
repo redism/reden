@@ -36,14 +36,22 @@ export default function ImagePostProcessor () {
       options.num = parseInt(n, 10)
       options.removeAfter = await sh.askYesNo('Remove original images? ')
       options.size = parseInt(size, 10)
-    } else if (yargs.o) {
+      options.clipboard = await sh.askYesNo('Copy to clipboard instead of file? ')
+    } else if (argv.o) {
       options.num = 1
       options.removeAfter = false
       options.size = 0
+      options.clipboard = false
+    } else if (argv.c) {
+      options.num = 1
+      options.removeAfter = false
+      options.size = 0
+      options.clipboard = true
     } else {
       options.num = 1
       options.removeAfter = false
       options.size = 640
+      options.clipboard = false
     }
 
     const files = getLatestNScreenCaptures(options.num)
@@ -56,6 +64,11 @@ export default function ImagePostProcessor () {
       await downsizeImage(options.size, src, dst)
       if (options.removeAfter) {
         await exec(`rm -f ${src}`, { doNotAsk: true })
+      }
+
+      if (options.clipboard) {
+        console.log('Copying to clipboard.')
+        await exec(`impbcopy ${dst}`, { doNotAsk: true })
       }
       dsts.push(dst)
     }
