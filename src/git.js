@@ -14,6 +14,15 @@ export const ConfigKey = {
   syncRemote: 'syncRemote',
 }
 
+function wrapBranchNameSafe (branchName) {
+  const alreadyWrap = branchName[ 0 ] === '"' && branchName[ branchName.length - 1 ] === '"'
+  return alreadyWrap ? branchName : `"${branchName}"`
+}
+
+function replaceBranchNameForWeb (branchName) {
+  return branchName.replace('#', '%23')
+}
+
 export default function GitSash (config) {
 
   const exec = command => _exec(command, { silent: true, doNotAsk: !config.askBeforeRunCommand })
@@ -82,14 +91,14 @@ export default function GitSash (config) {
     let accountName = getOriginAccountName()
     const [ masterAccount, masterRepo ] = await getMasterRepoInfo()
     const syncBranch = await getLocalBranchToSync()
-    await exec(`git push --set-upstream origin ${branchName}`)
-    await exec(`open https://github.com/${masterAccount}/${masterRepo}/compare/${syncBranch}...${accountName}:${branchName}?expand=0`)
+    await exec(`git push --set-upstream origin ${wrapBranchNameSafe(branchName)}`)
+    await exec(`open https://github.com/${masterAccount}/${masterRepo}/compare/${replaceBranchNameForWeb(syncBranch)}...${accountName}:${replaceBranchNameForWeb(branchName)}?expand=0`)
   }
 
   async function synchronizeSpecificBranch () {
     return stashDecorator(async () => {
       const remoteName = await getRemoteNameToSync()
-      const localBranch = await getLocalBranchToSync()
+      const localBranch = wrapBranchNameSafe(await getLocalBranchToSync())
 
       console.log(`Checking out ${localBranch.yellow} and merging from ${remoteName.yellow}`)
       await exec(`git checkout ${localBranch}`)
@@ -147,7 +156,7 @@ export default function GitSash (config) {
   }
 
   function getSha1Of (name) {
-    return query(`git rev-parse ${name}`).trim()
+    return query(`git rev-parse ${wrapBranchNameSafe(name)}`).trim()
   }
 
   function getLogOnelinerBetween (s1, s2) {
@@ -161,7 +170,8 @@ export default function GitSash (config) {
     await synchronizeSpecificBranch()
     return stashDecorator(async () => {
       return iterateLocalBranches(async (branch) => {
-        const branchToSync = await getLocalBranchToSync()
+        branch = wrapBranchNameSafe(branch)
+        const branchToSync = wrapBranchNameSafe(await getLocalBranchToSync())
         const ancestorSha1 = query(`git merge-base ${branchToSync} ${branch}`).trim()
         const branchSha1 = getSha1Of(branch)
         const logsBranch = getLogOnelinerBetween(ancestorSha1, branchSha1)
