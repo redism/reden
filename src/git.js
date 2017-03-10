@@ -20,7 +20,7 @@ function wrapBranchNameSafe (branchName) {
 }
 
 function replaceBranchNameForWeb (branchName) {
-  return branchName.replace('#', '%23')
+  return encodeURIComponent(branchName)
 }
 
 export default function GitSash (config) {
