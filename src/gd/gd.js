@@ -118,13 +118,13 @@ export default function GDSash (config) {
 
   async function createDocument (link) {
     await init()
-    const linkToken = getLinkToken(await sh.getAnswer('Which link do you want to map document to? '))
+    const linkToken = await getLinkToken(await sh.getAnswer('Which link do you want to map document to? '))
 
     const existing = db.linkMap[ linkToken ]
 
     if (existing) {
       console.log(`Document for given link already exists. Opening the document.`)
-      await _exec(`open "${existing}"`, { doNotAsk: true })
+      await _exec(`open -R "${existing}"`, { doNotAsk: true })
     } else {
       const templatePath = await pickTemplate()
       let title = ''
@@ -143,7 +143,7 @@ export default function GDSash (config) {
       // const docData = global.JSON.parse(fs.readFileSync(fullPath))
 
       db.linkMap[ linkToken ] = fullPath
-      await _exec(`open "${fullPath}"`, { doNotAsk: true })
+      await _exec(`open -R "${fullPath}"`, { doNotAsk: true })
       await saveDB()
     }
   }
