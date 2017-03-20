@@ -1,6 +1,6 @@
 {
   "name": "reden",
-  "version": "0.2.4",
+  "version": "0.2.4-beta",
   "description": "Simple command-line utilities tool-belt",
   "main": "index.js",
   "bin": {
@@ -12,7 +12,7 @@
     "andcapture": "./bin/andcapture",
     "impbcopy": "./bin/impbcopy",
     "ppimg": "./bin/ppimg.js",
-    "gd": ".bin/gd.js"
+    "gd": "./bin/gd.js"
   },
   "scripts": {
     "build": "babel src -d lib",
