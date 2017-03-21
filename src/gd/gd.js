@@ -102,12 +102,15 @@ export default function GDSash (config) {
     await openDB()
   }
 
-  async function pickTemplate () {
-    const list = fs.readdirSync(dir.template)
+  function _listAllFiles (rootDir) {
+    return fs.readdirSync(rootDir)
       .filter(p => {
-        return fs.lstatSync(path.join(dir.template, p)).isFile()
+        return fs.lstatSync(path.join(rootDir, p)).isFile()
       })
+  }
 
+  async function pickTemplate () {
+    const list = _listAllFiles(dir.template)
     const r = await sh.pickList('Pick a template : ', list)
     return path.join(dir.template, list[ r ])
   }
@@ -148,8 +151,17 @@ export default function GDSash (config) {
     }
   }
 
+  async function openDocument () {
+    await init()
+    const files = _listAllFiles(dir.inbox)
+    const index = await sh.pickList('Pick a document to open : ', files)
+    const filePath = path.join(dir.inbox, files[ index ])
+    await _exec(`open "${filePath}"`, { doNotAsk: true })
+  }
+
   return {
     init,
     createDocument,
+    openDocument,
   }
 }
