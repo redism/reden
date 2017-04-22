@@ -1,6 +1,6 @@
 {
   "name": "reden",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Simple command-line utilities tool-belt",
   "main": "index.js",
   "bin": {
@@ -11,7 +11,8 @@
     "git-sync": "./bin/git-sync.js",
     "andcapture": "./bin/andcapture",
     "impbcopy": "./bin/impbcopy",
-    "ppimg": "./bin/ppimg.js"
+    "ppimg": "./bin/ppimg.js",
+    "push": "./bin/push.js"
   },
   "scripts": {
     "build": "babel src -d lib",
@@ -33,6 +34,7 @@
   "dependencies": {
     "bluebird": "3.4.7",
     "colors": "1.1.2",
+    "pushbullet": "2.0.0",
     "shell-helper": "1.0.2",
     "shelljs": "0.7.6",
     "yargs": "6.6.0"
