@@ -25,6 +25,18 @@ Easier screen capture and post processing for attaching images to github issue, 
   * `ppimg -i` : Interactive mode
   * `ppimg -c` : Pick 1 recent capture, retain original size, convert to jpg and copy to clipboard.
   * `ppimg -o` : Pick 1 recent capture, retain original size, convert to jpg file.
+  
+## push bullet simple script.
+
+Send a message to the specific device using [Push-Bullet](https://www.pushbullet.com/). You can go grab a cup of coffee until long-running client command finishes. Run once after installation to setup API token and default message.
+
+Example)
+
+```
+$ npm install ; push
+```
+
+* `push --reset` : Reset push related configuration.
 
 ## Thanks to
 
