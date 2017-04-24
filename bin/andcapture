@@ -5,7 +5,9 @@
 # File is saved on ~/Desktop
 #
 
-adb shell screencap -p | perl -pe 's/\x0D\x0A/\x0A/g' > ~/Desktop/screen.png
+adb shell screencap -p /sdcard/screencap.png
+adb pull /sdcard/screencap.png ~/Desktop/screen.png
+#adb shell screencap -p | perl -pe 's/\x0D\x0A/\x0A/g' > ~/Desktop/screen.png
 sips -s format jpeg -Z 640 ~/Desktop/screen.png --out ~/Desktop/screen.jpg
 rm ~/Desktop/screen.png
 open -R ~/Desktop/screen.jpg
