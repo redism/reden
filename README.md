@@ -14,6 +14,7 @@ Configurations are stored at `~/.reden.json`. You can reset options per repo /w 
 * `git pr` : Push current local branch to origin, and open pull request page.
 * `git master` : Fast-forward develop and master branch, and merge develop into master.
 * `git pp` : Pull and prune rebased branch. (Check if rebased into main branch using commit log)
+* `git open` : Open related website. (see "origin" remote, FETCH URL, github only for now)
 
 ## image post-process utilities for faster screen capture.
 

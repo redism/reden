@@ -1,9 +1,10 @@
-import yargs from 'yargs'
 import Promise from 'bluebird'
-require('babel-runtime/core-js/promise').default = Promise
-import Config from './config'
+import yargs from 'yargs'
 import { query } from './common'
+import Config from './config'
 import GitSash, { ConfigKey } from './git'
+
+require('babel-runtime/core-js/promise').default = Promise
 
 const argv = yargs.argv
 
@@ -34,6 +35,7 @@ let commandMap = {
   'master': 'mergeDevelopToMasterAndPush',
   'prune': 'pruneFromAllRemotes',
   'pp': 'removeRebasedBranches',
+  'open': 'openRepository'
 }
 
 module.exports = function (command) {
@@ -46,6 +48,7 @@ module.exports = function (command) {
   pa     : prune from all remotes.
   pp     : sync and remove rebased local branches. (compared by commit message)
   reset  : reset configuration for current git-root.
+  open   : open related github repository.
   y      : (yes) don't ask before command. (will be saved to configuration)
 `)
   } else {
@@ -56,5 +59,3 @@ module.exports = function (command) {
     })
   }
 }
-
-

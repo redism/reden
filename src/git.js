@@ -2,11 +2,13 @@
 // git push --set-upstream origin $BRANCH_NAME
 // open https://github.com/taggledev/peeper/compare/develop...redism:$BRANCH_NAME?expand=0
 
+import assert from 'assert'
 import Promise from 'bluebird'
-require('babel-runtime/core-js/promise').default = Promise
-require('colors')
 import sh from 'shell-helper'
 import { exec as _exec, query } from './common'
+
+require('babel-runtime/core-js/promise').default = Promise
+require('colors')
 
 export const ConfigKey = {
   askBeforeRunCommand: 'askBeforeRunCommand',
@@ -188,12 +190,26 @@ export default function GitSash (config) {
     })
   }
 
+  async function openRepository () {
+    try {
+      const r = query('git remote show origin')
+      const lines = r.split('\n')
+      const url = lines[ 1 ].split('URL:')[ 1 ].trim()
+      const comps = url.split('github.com:')[ 1 ].split('.git')[ 0 ].split('/')
+      assert(comps.length === 2)
+      await exec(`open https://github.com/${comps[ 0 ]}/${comps[ 1 ]}`)
+    } catch (ex) {
+      console.error('Failed to find related page. (git remote show origin). FETCH URL, Github Only.')
+    }
+  }
+
   return {
     pruneFromAllRemotes,
     removeRebasedBranches,
     createAndOpenPullRequest,
     mergeDevelopToMasterAndPush,
     synchronizeSpecificBranch,
+    openRepository,
   }
 }
 
