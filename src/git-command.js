@@ -54,7 +54,7 @@ module.exports = function (command) {
   } else {
     const sash = GitSash(config)
 
-    sash[ fn ]().finally(() => {
+    sash[ fn ](argv._).finally(() => {
       Config.write()
     })
   }

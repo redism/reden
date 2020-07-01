@@ -15,6 +15,11 @@ Configurations are stored at `~/.reden.json`. You can reset options per repo /w 
 * `git master` : Fast-forward develop and master branch, and merge develop into master.
 * `git pp` : Pull and prune rebased branch. (Check if rebased into main branch using commit log)
 * `git open` : Open related website. (see "origin" remote, FETCH URL, github only for now)
+  * `git open i` : Open issue page
+  * `git open p` : Open project page
+  * `git open pr` : Open PR page
+  * `git open {number}` : Open a specific issue
+  * Can receive multiple args. `git open 380 381 382`
 
 ## image post-process utilities for faster screen capture.
 

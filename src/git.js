@@ -190,14 +190,30 @@ export default function GitSash (config) {
     })
   }
 
-  async function openRepository () {
+  async function openRepository (numOrString) {
     try {
       const r = query('git remote show origin')
       const lines = r.split('\n')
       const url = lines[ 1 ].split('URL:')[ 1 ].trim()
       const comps = url.split('github.com:')[ 1 ].split('.git')[ 0 ].split('/')
       assert(comps.length === 2)
-      await exec(`open https://github.com/${comps[ 0 ]}/${comps[ 1 ]}`)
+      const command = `open https://github.com/${comps[ 0 ]}/${comps[ 1 ]}`
+
+      if (numOrString.length === 0) {
+        await exec(command)
+      } else {
+        numOrString.forEach(c => {
+          if (c === 'i') {
+            exec(`${command}/issues`)
+          } else if (c === 'p') {
+            exec(`${command}/projects`)
+          } else if (c === 'pr') {
+            exec(`${command}/pulls`)
+          } else {
+            exec(`${command}/issues/${c}`)
+          }
+        })
+      }
     } catch (ex) {
       console.error('Failed to find related page. (git remote show origin). FETCH URL, Github Only.')
     }

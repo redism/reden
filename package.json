@@ -1,6 +1,6 @@
 {
   "name": "reden",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Simple command-line utilities tool-belt",
   "main": "index.js",
   "bin": {
