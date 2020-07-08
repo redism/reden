@@ -195,7 +195,12 @@ export default function GitSash (config) {
       const r = query('git remote show origin')
       const lines = r.split('\n')
       const url = lines[ 1 ].split('URL:')[ 1 ].trim()
-      const comps = url.split('github.com:')[ 1 ].split('.git')[ 0 ].split('/')
+      let comps
+      if (url.indexOf('https') === 0) {
+        comps = url.split('github.com/')[ 1 ].split('.git')[ 0 ].split('/')
+      } else {
+        comps = url.split('github.com:')[ 1 ].split('.git')[ 0 ].split('/')
+      }
       assert(comps.length === 2)
       const command = `open https://github.com/${comps[ 0 ]}/${comps[ 1 ]}`
 
