@@ -12,34 +12,34 @@ const gitRoot = query('git rev-parse --show-toplevel').trim()
 const config = Config.getByKey(gitRoot)
 
 if (argv.reset) {
-  Object.keys(config).forEach(k => delete config[ k ])
+  Object.keys(config).forEach((k) => delete config[k])
   Config.write()
   console.log(`Cleared configuration for git root [${gitRoot.yellow}]`)
 }
 
 if (argv.y) {
-  config[ ConfigKey.askBeforeRunCommand ] = false
-} else if (config[ ConfigKey.askBeforeRunCommand ] === undefined) {
-  config[ ConfigKey.askBeforeRunCommand ] = true
+  config[ConfigKey.askBeforeRunCommand] = false
+} else if (config[ConfigKey.askBeforeRunCommand] === undefined) {
+  config[ConfigKey.askBeforeRunCommand] = true
 }
 
 console.log(`Current configuration\n=================`)
-Object.keys(ConfigKey).forEach(k => {
-  console.log(`  ${k.yellow} : ${config[ ConfigKey[ k ] ]}`)
+Object.keys(ConfigKey).forEach((k) => {
+  console.log(`  ${k.yellow} : ${config[ConfigKey[k]]}`)
 })
 console.log(`=================`)
 
 let commandMap = {
-  'pr': 'createAndOpenPullRequest',
-  'sync': 'synchronizeSpecificBranch',
-  'master': 'mergeDevelopToMasterAndPush',
-  'prune': 'pruneFromAllRemotes',
-  'pp': 'removeRebasedBranches',
-  'open': 'openRepository'
+  pr: 'createAndOpenPullRequest',
+  sync: 'synchronizeSpecificBranch',
+  master: 'mergeDevelopToMasterAndPush',
+  prune: 'pruneFromAllRemotes',
+  pp: 'removeRebasedBranches',
+  open: 'openRepository',
 }
 
 module.exports = function (command) {
-  let fn = commandMap[ command ]
+  let fn = commandMap[command]
   if (!fn) {
     console.log(`Usage.\n
   pr     : create a pull request from current local branch.
@@ -54,7 +54,7 @@ module.exports = function (command) {
   } else {
     const sash = GitSash(config)
 
-    sash[ fn ](argv._).finally(() => {
+    sash[fn](argv._).finally(() => {
       Config.write()
     })
   }

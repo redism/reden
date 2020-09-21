@@ -16,88 +16,97 @@ export const ConfigKey = {
   syncRemote: 'syncRemote',
 }
 
-function wrapBranchNameSafe (branchName) {
-  const alreadyWrap = branchName[ 0 ] === '"' && branchName[ branchName.length - 1 ] === '"'
+function wrapBranchNameSafe(branchName) {
+  const alreadyWrap = branchName[0] === '"' && branchName[branchName.length - 1] === '"'
   return alreadyWrap ? branchName : `"${branchName}"`
 }
 
-function replaceBranchNameForWeb (branchName) {
+function replaceBranchNameForWeb(branchName) {
   return encodeURIComponent(branchName)
 }
 
-export default function GitSash (config) {
+export default function GitSash(config) {
+  const exec = (command) => _exec(command, { silent: true, doNotAsk: !config.askBeforeRunCommand })
 
-  const exec = command => _exec(command, { silent: true, doNotAsk: !config.askBeforeRunCommand })
-
-  async function iterateRemote (fn) {
-    let remoteNames = (await query('git remote')).split('\n').filter(s => s.trim().length > 0)
+  async function iterateRemote(fn) {
+    let remoteNames = (await query('git remote')).split('\n').filter((s) => s.trim().length > 0)
     for (let i = 0; i < remoteNames.length; i++) {
-      await Promise.resolve(fn(remoteNames[ i ]))
+      await Promise.resolve(fn(remoteNames[i]))
     }
   }
 
-  async function iterateLocalBranches (fn) {
-    const branches = query('git branch -a').split('\n')
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
-      .filter(s => !s.startsWith('*'))
-      .filter(s => !s.startsWith('remotes'))
-      .filter(s => !s.startsWith('develop'))
-      .filter(s => !s.startsWith('master'))
+  async function iterateLocalBranches(fn) {
+    const branches = query('git branch -a')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .filter((s) => !s.startsWith('*'))
+      .filter((s) => !s.startsWith('remotes'))
+      .filter((s) => !s.startsWith('develop'))
+      .filter((s) => !s.startsWith('master'))
 
     for (let i = 0; i < branches.length; i++) {
-      await Promise.resolve(fn(branches[ i ]))
+      await Promise.resolve(fn(branches[i]))
     }
   }
 
-  async function getRemoteNameToSync () {
-    if (!config[ ConfigKey.syncRemote ]) {
-      const remoteNames = (await query('git remote')).split('\n').filter(s => s.trim().length > 0)
-      config[ ConfigKey.syncRemote ] = remoteNames[ await sh.pickList(`Which remote do you want to synchronize? `, remoteNames) ]
+  async function getRemoteNameToSync() {
+    if (!config[ConfigKey.syncRemote]) {
+      const remoteNames = (await query('git remote')).split('\n').filter((s) => s.trim().length > 0)
+      config[ConfigKey.syncRemote] =
+        remoteNames[await sh.pickList(`Which remote do you want to synchronize? `, remoteNames)]
     }
-    return config[ ConfigKey.syncRemote ]
+    return config[ConfigKey.syncRemote]
   }
 
-  async function getLocalBranchToSync () {
-    if (!config[ ConfigKey.syncBranch ]) {
-      config[ ConfigKey.syncBranch ] = await pickLocalBranch(`Which branch do you want to sync? `)
+  async function getLocalBranchToSync() {
+    if (!config[ConfigKey.syncBranch]) {
+      config[ConfigKey.syncBranch] = await pickLocalBranch(`Which branch do you want to sync? `)
     }
-    return config[ ConfigKey.syncBranch ]
+    return config[ConfigKey.syncBranch]
   }
 
-  async function getMasterRepoInfo () {
+  async function getMasterRepoInfo() {
     const remoteName = await getRemoteNameToSync()
-    const comps = (await query(`git remote get-url ${remoteName}`)).split(':')[ 1 ].split('/').map(s => s.trim())
-    return [ comps[ 0 ], comps[ 1 ].substring(0, comps[ 1 ].length - 4) ] // remove '.git'
+    const comps = (await query(`git remote get-url ${remoteName}`))
+      .split(':')[1]
+      .split('/')
+      .map((s) => s.trim())
+    return [comps[0], comps[1].substring(0, comps[1].length - 4)] // remove '.git'
   }
 
-  async function pickLocalBranch (msg) {
-    const branches = query('git branch -a').split('\n')
-      .map(s => s.substring(2))
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
-      .filter(s => !s.startsWith('remotes'))
-    return branches[ await sh.pickList(msg, branches) ]
+  async function pickLocalBranch(msg) {
+    const branches = query('git branch -a')
+      .split('\n')
+      .map((s) => s.substring(2))
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .filter((s) => !s.startsWith('remotes'))
+    return branches[await sh.pickList(msg, branches)]
   }
 
-  function getOriginAccountName () {
-    return query('git remote get-url origin').split(':')[ 1 ].split('/')[ 0 ]
+  function getOriginAccountName() {
+    return query('git remote get-url origin').split(':')[1].split('/')[0]
   }
 
-  function hasSomethingToStash () {
+  function hasSomethingToStash() {
     return query('git diff --cached').trim() !== ''
   }
 
-  async function createAndOpenPullRequest () {
+  async function createAndOpenPullRequest() {
     let branchName = query('git branch | grep "^*" | cut -d" " -f 2').trim()
     let accountName = getOriginAccountName()
-    const [ masterAccount, masterRepo ] = await getMasterRepoInfo()
+    const [masterAccount, masterRepo] = await getMasterRepoInfo()
     const syncBranch = await getLocalBranchToSync()
     await exec(`git push --set-upstream origin ${wrapBranchNameSafe(branchName)}`)
-    await exec(`open https://github.com/${masterAccount}/${masterRepo}/compare/${replaceBranchNameForWeb(syncBranch)}...${accountName}:${replaceBranchNameForWeb(branchName)}?expand=0`)
+    await exec(
+      `open https://github.com/${masterAccount}/${masterRepo}/compare/${replaceBranchNameForWeb(
+        syncBranch
+      )}...${accountName}:${replaceBranchNameForWeb(branchName)}?expand=0`
+    )
   }
 
-  async function synchronizeSpecificBranch () {
+  async function synchronizeSpecificBranch() {
     return stashDecorator(async () => {
       const remoteName = await getRemoteNameToSync()
       const localBranch = wrapBranchNameSafe(await getLocalBranchToSync())
@@ -109,7 +118,7 @@ export default function GitSash (config) {
     })
   }
 
-  async function stashDecorator (fn) {
+  async function stashDecorator(fn) {
     const hasStash = hasSomethingToStash()
     if (hasStash) {
       console.log(`You have local changes. Let's stash first.`)
@@ -132,7 +141,7 @@ export default function GitSash (config) {
     }
   }
 
-  async function mergeDevelopToMasterAndPush () {
+  async function mergeDevelopToMasterAndPush() {
     return stashDecorator(async () => {
       const remoteName = await getRemoteNameToSync()
       console.log(`Fast-forwarding ${'develop'.yellow} branch.`)
@@ -150,25 +159,26 @@ export default function GitSash (config) {
     })
   }
 
-  async function pruneFromAllRemotes () {
+  async function pruneFromAllRemotes() {
     return iterateRemote(async (remoteName) => {
       console.log(`Pruning from ${remoteName}`)
       await exec(`git remote prune ${remoteName}`)
     })
   }
 
-  function getSha1Of (name) {
+  function getSha1Of(name) {
     return query(`git rev-parse ${wrapBranchNameSafe(name)}`).trim()
   }
 
-  function getLogOnelinerBetween (s1, s2) {
-    return query(`git log ${s1}..${s2} --oneline`).split('\n')
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
-      .map(s => s.split(' ').slice(1).join(' '))
+  function getLogOnelinerBetween(s1, s2) {
+    return query(`git log ${s1}..${s2} --oneline`)
+      .split('\n')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .map((s) => s.split(' ').slice(1).join(' '))
   }
 
-  async function removeRebasedBranches () {
+  async function removeRebasedBranches() {
     await synchronizeSpecificBranch()
     return stashDecorator(async () => {
       return iterateLocalBranches(async (branch) => {
@@ -181,7 +191,7 @@ export default function GitSash (config) {
         const developSha1 = getSha1Of(branchToSync)
         const logsDev = getLogOnelinerBetween(ancestorSha1, developSha1)
 
-        const isDevContainsAllLogsOfBranch = logsBranch.every(log => logsDev.indexOf(log) >= 0)
+        const isDevContainsAllLogsOfBranch = logsBranch.every((log) => logsDev.indexOf(log) >= 0)
         if (isDevContainsAllLogsOfBranch) {
           console.log(`Local branch [${branch}] seems to have been rebased to ${branchToSync}.`)
           await exec(`git branch -D ${branch}`)
@@ -190,24 +200,24 @@ export default function GitSash (config) {
     })
   }
 
-  async function openRepository (numOrString) {
+  async function openRepository(numOrString) {
     try {
       const r = query('git remote show origin')
       const lines = r.split('\n')
-      const url = lines[ 1 ].split('URL:')[ 1 ].trim()
+      const url = lines[1].split('URL:')[1].trim()
       let comps
       if (url.indexOf('https') === 0) {
-        comps = url.split('github.com/')[ 1 ].split('.git')[ 0 ].split('/')
+        comps = url.split('github.com/')[1].split('.git')[0].split('/')
       } else {
-        comps = url.split('github.com:')[ 1 ].split('.git')[ 0 ].split('/')
+        comps = url.split('github.com:')[1].split('.git')[0].split('/')
       }
       assert(comps.length === 2)
-      const command = `open https://github.com/${comps[ 0 ]}/${comps[ 1 ]}`
+      const command = `open https://github.com/${comps[0]}/${comps[1]}`
 
       if (numOrString.length === 0) {
         await exec(command)
       } else {
-        numOrString.forEach(c => {
+        numOrString.forEach((c) => {
           if (c === 'i') {
             exec(`${command}/issues`)
           } else if (c === 'p') {
@@ -233,4 +243,3 @@ export default function GitSash (config) {
     openRepository,
   }
 }
-
