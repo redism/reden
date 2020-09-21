@@ -69,10 +69,10 @@ export default function GitSash(config) {
   async function getMasterRepoInfo() {
     const remoteName = await getRemoteNameToSync()
     const comps = (await query(`git remote get-url ${remoteName}`))
-      .split(':')[1]
+      .split('://')[1]
       .split('/')
       .map((s) => s.trim())
-    return [comps[0], comps[1].substring(0, comps[1].length - 4)] // remove '.git'
+    return [comps[1], comps[2].substring(0, comps[2].length - 4)] // remove '.git'
   }
 
   async function pickLocalBranch(msg) {
@@ -86,7 +86,7 @@ export default function GitSash(config) {
   }
 
   function getOriginAccountName() {
-    return query('git remote get-url origin').split(':')[1].split('/')[0]
+    return query('git remote get-url origin').split('://')[1].split('/')[1]
   }
 
   function hasSomethingToStash() {
