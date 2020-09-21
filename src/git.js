@@ -97,7 +97,6 @@ export default function GitSash(config) {
     let branchName = query('git branch | grep "^*" | cut -d" " -f 2').trim()
     let accountName = getOriginAccountName()
     const [masterAccount, masterRepo] = await getMasterRepoInfo()
-    console.log(100, accountName)
     const syncBranch = await getLocalBranchToSync()
     await exec(`git push --set-upstream origin ${wrapBranchNameSafe(branchName)}`)
     await exec(
