@@ -4,12 +4,12 @@ import path from 'path'
 import os from 'os'
 
 export class Config {
-  constructor () {
+  constructor() {
     this._config = null
     this._configPath = path.join(os.homedir(), '.reden.json')
   }
 
-  initConfig () {
+  initConfig() {
     const configPath = this._configPath
     if (fs.existsSync(configPath)) {
       const stat = fs.statSync(configPath)
@@ -20,15 +20,15 @@ export class Config {
     }
   }
 
-  write () {
+  write() {
     fs.writeFileSync(this._configPath, global.JSON.stringify(this._config))
   }
 
-  getByKey (key) {
-    if (!this._config[ key ]) {
-      this._config[ key ] = {}
+  getByKey(key) {
+    if (!this._config[key]) {
+      this._config[key] = {}
     }
-    return this._config[ key ]
+    return this._config[key]
   }
 }
 
