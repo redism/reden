@@ -4,6 +4,7 @@
 
 import assert from 'assert'
 import Promise from 'bluebird'
+import path from 'path'
 import sh from 'shell-helper'
 import { exec as _exec, query } from './common'
 
@@ -35,15 +36,29 @@ export default function GitSash(config) {
     }
   }
 
+  async function getBranchesToKeep() {
+    const names = ['*', 'develop', 'master', 'main']
+    try {
+      const gitRoot = query(`git rev-parse --show-toplevel`)
+      const info = require(path.join(gitRoot, './.reden.js'))
+      // {
+      //   "branchesToKeep": ["qa", "somethingElse"]
+      // }
+      return [...names, info.branchesToKeep || []]
+    } catch (ex) {
+      return names
+    }
+  }
+
   async function iterateLocalBranches(fn) {
+    const branchesToKeep = await getBranchesToKeep()
     const branches = query('git branch -a')
       .split('\n')
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
       .filter((s) => !s.startsWith('*'))
       .filter((s) => !s.startsWith('remotes'))
-      .filter((s) => !s.startsWith('develop'))
-      .filter((s) => !s.startsWith('master'))
+      .filter((s) => !branchesToKeep.includes(s))
 
     for (let i = 0; i < branches.length; i++) {
       await Promise.resolve(fn(branches[i]))

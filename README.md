@@ -20,6 +20,15 @@ Configurations are stored at `~/.reden.json`. You can reset options per repo /w 
   * `git open pr` : Open PR page
   * `git open {number}` : Open a specific issue
   * Can receive multiple args. `git open 380 381 382`
+  
+You can create .reden.js file in the git root directory to provide more options
+
+```
+module.exports = exports = {
+  // default : main, master, develop, remotes/*
+  "branchesToKeep": ["qa", "someBranchNotToDelete"]
+}
+```
 
 ## image post-process utilities for faster screen capture.
 
